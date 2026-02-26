@@ -1,18 +1,16 @@
 package uz.coder.davomatbackend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uz.coder.davomatbackend.model.Balance;
-import uz.coder.davomatbackend.model.Response;
-import uz.coder.davomatbackend.model.TelegramUser;
-import uz.coder.davomatbackend.model.User;
+import uz.coder.davomatbackend.model.*;
 import uz.coder.davomatbackend.service.StudentService;
 import uz.coder.davomatbackend.service.TelegramUserService;
 import uz.coder.davomatbackend.service.UserService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/telegram")
@@ -45,12 +43,15 @@ public class TelegramUserController {
 
 
     @GetMapping("/get_all_users")
-    public ResponseEntity<Response<List<TelegramUser>>> getAllUsers() {
+    public ResponseEntity<Response<PageResponse<TelegramUser>>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         try {
-            List<TelegramUser> result = service.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+            Page<TelegramUser> userPage = service.findAllPaginated(pageable);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Response<>(200, result));
+                    .body(new Response<>(200, PageResponse.of(userPage)));
         } catch (Exception e) {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

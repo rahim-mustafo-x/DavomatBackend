@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
 import uz.coder.davomatbackend.jwt.JwtAuthFilter;
 import uz.coder.davomatbackend.jwt.JwtService;
 
@@ -38,10 +40,24 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ❌ CSRF o‘chiq (JWT uchun shart)
+                // ❌ CSRF o'chiq (JWT uchun shart)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // 🔐 Session yo‘q (STATLESS)
+                // 🌐 CORS configuration
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration corsConfig = new CorsConfiguration();
+                    corsConfig.setAllowedOrigins(java.util.List.of(
+                        "http://localhost:5173",
+                        "http://localhost:3000", 
+                        "http://localhost:8080"
+                    ));
+                    corsConfig.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfig.setAllowedHeaders(java.util.List.of("*"));
+                    corsConfig.setAllowCredentials(true);
+                    return corsConfig;
+                }))
+
+                // 🔐 Session yo'q (STATLESS)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -55,11 +71,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/telegram/**").permitAll()
                         .requestMatchers("/api/contact/**").permitAll()
 
-                        // 🔓 SWAGGER
+                        // 🔓 WebSocket endpoints
+                        .requestMatchers("/ws/**").permitAll()
+
+                        // 🔓 SWAGGER - Public (no login required)
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/websocket-test.html"
                         ).permitAll()
 
                         // 🔐 Qolgan API faqat TOKEN bilan

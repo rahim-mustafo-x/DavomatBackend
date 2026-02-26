@@ -1,23 +1,36 @@
 package uz.coder.davomatbackend.controller;
 
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import lombok.RequiredArgsConstructor;
 import uz.coder.davomatbackend.model.AddAttendance;
+import uz.coder.davomatbackend.model.ApiResponse;
 import uz.coder.davomatbackend.model.Attendance;
-import uz.coder.davomatbackend.model.Response;
+import uz.coder.davomatbackend.model.PageResponse;
 import uz.coder.davomatbackend.model.User;
 import uz.coder.davomatbackend.service.AttendanceService;
 import uz.coder.davomatbackend.service.UserService;
-
-import java.io.IOException;
-import java.util.List;
+import uz.coder.davomatbackend.service.WebSocketNotificationService;
 
 @RestController
 @RequestMapping("/api/attendance")
@@ -26,86 +39,122 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
     private final UserService userService;
+    private final WebSocketNotificationService notificationService;
+
+    private User getCurrentUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        return userService.findByEmail(userDetails.getUsername());
+    }
 
     @PostMapping("/add")
-    public ResponseEntity<Response<Attendance>> save(@RequestBody AddAttendance addAttendance) {
-        Attendance attendance = new Attendance();
-        attendance.setDate(addAttendance.getDate());
-        attendance.setStudentId(addAttendance.getStudentId());
-        attendance.setStatus(addAttendance.getStatus());
-        Attendance saved = attendanceService.save(attendance);
-        if (saved == null)
-            return ResponseEntity.badRequest().body(new Response<>(500, "Already exists or invalid"));
-        return ResponseEntity.ok(new Response<>(200, saved));
+    public ResponseEntity<ApiResponse<Attendance>> save(@RequestBody AddAttendance addAttendance) {
+        try {
+            Attendance attendance = new Attendance();
+            attendance.setDate(addAttendance.getDate());
+            attendance.setStudentId(addAttendance.getStudentId());
+            attendance.setStatus(addAttendance.getStatus());
+            Attendance saved = attendanceService.save(attendance);
+            
+            // Get student's user to send notification
+            try {
+                User currentUser = getCurrentUser();
+                notificationService.notifyAttendanceUpdated(currentUser.getUsername(), "Attendance recorded for student ID: " + addAttendance.getStudentId());
+            } catch (Exception e) {
+                // Log but don't fail the request if notification fails
+            }
+            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.created(saved));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.badRequest(ex.getMessage()));
+        }
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<Response<Attendance>> update(@RequestBody Attendance attendance) {
-        Attendance updated = attendanceService.update(attendance);
-        if (updated == null)
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(new Response<>(200, updated));
+    public ResponseEntity<ApiResponse<Attendance>> update(@RequestBody Attendance attendance) {
+        try {
+            Attendance updated = attendanceService.update(attendance);
+            
+            try {
+                User currentUser = getCurrentUser();
+                notificationService.notifyAttendanceUpdated(currentUser.getUsername(), "Attendance updated for student ID: " + attendance.getStudentId());
+            } catch (Exception e) {
+                // Log but don't fail the request if notification fails
+            }
+            
+            return ResponseEntity.ok(ApiResponse.success("Attendance updated successfully", updated));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.notFound(ex.getMessage()));
+        }
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Response<String>> delete(@PathVariable long id) {
-        boolean deleted = attendanceService.delete(id);
-        if (deleted)
-            return ResponseEntity.ok(new Response<>(200, "Deleted successfully"));
-        return ResponseEntity.status(404).body(new Response<>(404, "Not found"));
+    public ResponseEntity<ApiResponse<String>> delete(@PathVariable long id) {
+        try {
+            boolean deleted = attendanceService.delete(id);
+            if (deleted) {
+                return ResponseEntity.ok(ApiResponse.success("Deleted successfully", null));
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.notFound("Attendance not found"));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(ex.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<Attendance>> findById(@PathVariable long id) {
+    public ResponseEntity<ApiResponse<Attendance>> findById(@PathVariable long id) {
         try {
             Attendance attendance = attendanceService.findById(id);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Response<>(200, attendance));
+            return ResponseEntity.ok(ApiResponse.success(attendance));
         } catch (Exception e) {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Response<>(500, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.notFound("Attendance not found"));
         }
     }
 
     @PostMapping("/excel")
-    public ResponseEntity<Response<String>> importExcel(@RequestParam MultipartFile file) {
-        boolean result = attendanceService.saveAllByExcel(file);
-        if (result)
-            return ResponseEntity.ok(new Response<>(200, "Imported successfully", null));
-        return ResponseEntity.badRequest().body(new Response<>(500, null, "Import failed"));
+    public ResponseEntity<ApiResponse<String>> importExcel(@RequestParam MultipartFile file) {
+        try {
+            boolean result = attendanceService.saveAllByExcel(file);
+            if (result) {
+                return ResponseEntity.ok(ApiResponse.success("Imported successfully", null));
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.badRequest("Import failed"));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(ex.getMessage()));
+        }
     }
 
-    // ✅ UserId token orqali olinadi
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportAttendance(
-            @RequestParam("year") int year,
-            @RequestParam("month") int month,
-            @RequestParam(name = "courseId", required = false) Long courseId,
-            @RequestParam(name = "groupId", required = false) Long groupId) {
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Long groupId) {
 
         try {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getPrincipal();
-
-            User user = userService.findByEmail(userDetails.getUsername());
+            User user = getCurrentUser();
             long userId = user.getId();
+            
             if (year < 2000 || year > 2100) {
-                return ResponseEntity.badRequest()
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Invalid year. Must be between 2000-2100".getBytes());
             }
             if (month < 1 || month > 12) {
-                return ResponseEntity.badRequest()
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Invalid month. Must be between 1-12".getBytes());
             }
 
-            // Excel faylni yaratish
             byte[] data = attendanceService.exportToExcelByMonth(userId, courseId, groupId, year, month);
-
-            // Dinamik fayl nomi
             String filename = String.format("attendance_%d_%d_%d.xlsx", userId, year, month);
 
             return ResponseEntity.ok()
@@ -122,18 +171,18 @@ public class AttendanceController {
         }
     }
 
-    // studentId frontdan qabul qilinadi
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<Response<List<Attendance>>> getByStudent(@PathVariable long studentId) {
+    public ResponseEntity<ApiResponse<PageResponse<Attendance>>> getByStudent(
+            @PathVariable long studentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            List<Attendance> attendanceList = attendanceService.getAllByStudentId(studentId);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Response<>(200, attendanceList));
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Attendance> attendancePage = attendanceService.getAllByStudentIdPaginated(studentId, pageable);
+            return ResponseEntity.ok(ApiResponse.success(PageResponse.of(attendancePage)));
         } catch (Exception e) {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new Response<>(500, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 }

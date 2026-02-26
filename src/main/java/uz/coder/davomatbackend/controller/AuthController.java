@@ -1,5 +1,7 @@
 package uz.coder.davomatbackend.controller;
 
+import java.time.LocalDate;
+
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -7,13 +9,19 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import uz.coder.davomatbackend.jwt.JwtService;
-import uz.coder.davomatbackend.model.*;
+import uz.coder.davomatbackend.model.AddUser;
+import uz.coder.davomatbackend.model.LoginRequest;
+import uz.coder.davomatbackend.model.LoginResponse;
+import uz.coder.davomatbackend.model.Response;
+import uz.coder.davomatbackend.model.User;
+import uz.coder.davomatbackend.model.UserResponse;
 import uz.coder.davomatbackend.service.UserService;
-
-import java.time.LocalDate;
-
 import static uz.coder.davomatbackend.todo.Strings.ROLE_STUDENT;
 import static uz.coder.davomatbackend.todo.Strings.THIS_PHONE_NUMBER_TAKEN;
 
@@ -49,12 +57,24 @@ public class AuthController {
         );
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = (User) userDetails;
 
         String token = jwtService.generateToken(userDetails);
 
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                null, // Don't send password
+                user.getPhoneNumber(),
+                user.getRole(),
+                user.getPayedDate()
+        );
+
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new LoginResponse(token, 200, null));
+                .body(new LoginResponse(token, 200, "Login successful", userResponse));
     }
 
     // 📝 REGISTER

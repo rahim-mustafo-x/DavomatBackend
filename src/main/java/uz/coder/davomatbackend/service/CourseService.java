@@ -1,6 +1,8 @@
 package uz.coder.davomatbackend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uz.coder.davomatbackend.db.CourseDatabase;
 import uz.coder.davomatbackend.db.model.CourseDbModel;
@@ -41,5 +43,10 @@ public class CourseService {
     public List<Course> findAll(long userId) {
         List<CourseDbModel> allByUserId = database.findAllByUserId(userId);
         return allByUserId.stream().map(item -> new Course(item.getId(), item.getTitle(), item.getDescription(), item.getUserId())).collect(Collectors.toList());
+    }
+
+    public Page<Course> findAllPaginated(long userId, Pageable pageable) {
+        Page<CourseDbModel> coursePage = database.findAllByUserId(userId, pageable);
+        return coursePage.map(item -> new Course(item.getId(), item.getTitle(), item.getDescription(), item.getUserId()));
     }
 }

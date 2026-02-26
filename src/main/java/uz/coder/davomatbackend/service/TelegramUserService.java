@@ -2,6 +2,8 @@ package uz.coder.davomatbackend.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uz.coder.davomatbackend.db.*;
 import uz.coder.davomatbackend.db.model.*;
@@ -54,6 +56,14 @@ public class TelegramUserService {
     public List<TelegramUser> findAll() {
         return database.findAll().stream().map(model->new TelegramUser(model.getId(), model.getTelegramUserId(), model.getFirstName(), model.getLastName(), model.getPhoneNumber())).collect(Collectors.toList());
     }
+    
+    public Page<TelegramUser> findAllPaginated(Pageable pageable) {
+        return database.findAll(pageable).map(model -> 
+            new TelegramUser(model.getId(), model.getUserId(), model.getTelegramUserId(), 
+                model.getFirstName(), model.getLastName(), model.getPhoneNumber())
+        );
+    }
+    
     public TelegramUser findByUserId(long userId){
         TelegramUserDbModel model = database.findByUserId(userId);
         return new TelegramUser(model.getId(), model.getUserId(), model.getTelegramUserId(), model.getFirstName(), model.getLastName(), model.getPhoneNumber());

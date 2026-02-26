@@ -1,6 +1,8 @@
 package uz.coder.davomatbackend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uz.coder.davomatbackend.db.GroupDatabase;
 import uz.coder.davomatbackend.db.model.GroupDbModel;
@@ -41,5 +43,10 @@ public class GroupService {
     public List<Group> findAllGroupByCourseId(long courseId) {
         List<GroupDbModel> allByUserId = database.findAllByCourseId(courseId);
         return allByUserId.stream().map(item -> new Group(item.getId(), item.getTitle(), item.getCourseId())).collect(Collectors.toList());
+    }
+
+    public Page<Group> findAllGroupByCourseIdPaginated(long courseId, Pageable pageable) {
+        Page<GroupDbModel> groupPage = database.findAllByCourseId(courseId, pageable);
+        return groupPage.map(item -> new Group(item.getId(), item.getTitle(), item.getCourseId()));
     }
 }

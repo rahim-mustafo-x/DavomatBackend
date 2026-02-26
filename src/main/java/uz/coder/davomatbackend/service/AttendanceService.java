@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uz.coder.davomatbackend.db.*;
@@ -256,6 +258,11 @@ public class AttendanceService {
         return attendanceDatabase.findAllByStudentId(studentId).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    public Page<Attendance> getAllByStudentIdPaginated(long studentId, Pageable pageable) {
+        Page<AttendanceDbModel> attendancePage = attendanceDatabase.findAllByStudentId(studentId, pageable);
+        return attendancePage.map(this::mapToDto);
     }
 
     public Attendance update(Attendance updated) {

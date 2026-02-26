@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uz.coder.davomatbackend.db.*;
@@ -78,6 +80,16 @@ public class StudentService {
     public List<Student> findAllStudentByGroupId(long groupId) {
         List<StudentDbModel> allByUserId = database.findAllByGroupId(groupId);
         return getStudents(allByUserId);
+    }
+
+    public Page<Student> findAllStudentByGroupIdPaginated(long groupId, Pageable pageable) {
+        Page<StudentDbModel> studentPage = database.findAllByGroupId(groupId, pageable);
+        return studentPage.map(item -> {
+            String firstNameById = userDatabase.findFirstNameById(item.getUserId());
+            String lastNameById = userDatabase.findLastNameById(item.getUserId());
+            String fullName = firstNameById + " " + lastNameById;
+            return new Student(item.getId(), fullName, item.getPhoneNumber(), item.getUserId(), item.getGroupId(), item.getCreatedDate());
+        });
     }
     public boolean saveAllByExcel(MultipartFile file, long userId) {
         try (InputStream inputStream = file.getInputStream();

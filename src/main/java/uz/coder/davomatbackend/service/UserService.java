@@ -1,22 +1,24 @@
 package uz.coder.davomatbackend.service;
 
+import java.time.Instant;
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import uz.coder.davomatbackend.db.TelegramUserDatabase;
 import uz.coder.davomatbackend.db.UserDatabase;
 import uz.coder.davomatbackend.db.model.TelegramUserDbModel;
 import uz.coder.davomatbackend.db.model.UserDbModel;
 import uz.coder.davomatbackend.model.Balance;
 import uz.coder.davomatbackend.model.User;
-
-import java.time.Instant;
-import java.time.LocalDate;
-
-import static uz.coder.davomatbackend.todo.Strings.*;
+import static uz.coder.davomatbackend.todo.Strings.ROLE_STUDENT;
+import static uz.coder.davomatbackend.todo.Strings.THERE_IS_NO_SUCH_A_PERSON;
+import static uz.coder.davomatbackend.todo.Strings.YOU_ARE_NOT_A_STUDENT;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -51,7 +53,7 @@ public class UserService implements UserDetailsService {
                         user.getFirstName(),
                         user.getLastName(),
                         user.getEmail(),
-                        encodedPassword, // 🔐 encode qildik
+                        encodedPassword,
                         user.getPhoneNumber(),
                         user.getRole(),
                         balance,
@@ -69,7 +71,7 @@ public class UserService implements UserDetailsService {
                 save.getRole(),
                 save.getLastPasswordResetAt(),
                 save.getPayedDate()
-                );
+        );
     }
 
     public User edit(User user) {
@@ -199,5 +201,9 @@ public class UserService implements UserDetailsService {
                 model.getLastPasswordResetAt(),
                 model.getPayedDate()
         );
+    }
+
+    public long countAllUsers() {
+        return database.count();
     }
 }

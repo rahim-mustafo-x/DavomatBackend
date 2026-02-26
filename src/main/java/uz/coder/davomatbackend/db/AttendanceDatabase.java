@@ -1,14 +1,18 @@
 package uz.coder.davomatbackend.db;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-import uz.coder.davomatbackend.db.model.AttendanceDbModel;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.stereotype.Repository;
+
+import uz.coder.davomatbackend.db.model.AttendanceDbModel;
 
 @Repository
 public interface AttendanceDatabase extends JpaRepository<AttendanceDbModel, Long> {
@@ -17,8 +21,13 @@ public interface AttendanceDatabase extends JpaRepository<AttendanceDbModel, Lon
     Optional<AttendanceDbModel> findByStudentIdAndDate(@Param("studentId") Long studentId,
                                                        @Param("date") LocalDate date);
 
+    @RestResource(path = "by-student", rel = "by-student")
     @Query("SELECT a FROM AttendanceDbModel a WHERE a.studentId = :studentId")
     List<AttendanceDbModel> findAllByStudentId(@Param("studentId") Long studentId);
+
+    @RestResource(path = "by-student-paged", rel = "by-student-paged")
+    @Query("SELECT a FROM AttendanceDbModel a WHERE a.studentId = :studentId")
+    Page<AttendanceDbModel> findAllByStudentId(@Param("studentId") Long studentId, Pageable pageable);
 
     @Query("""
     select a from AttendanceDbModel a
