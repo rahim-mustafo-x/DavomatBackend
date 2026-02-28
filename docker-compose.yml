@@ -33,7 +33,7 @@ services:
       - davomat-network
 
   davomat-app:
-    image: davomat-app:latest
+    build: .
     container_name: davomat-app
     depends_on:
       postgres:
