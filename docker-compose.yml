@@ -19,7 +19,7 @@ services:
     environment:
       POSTGRES_DB: davomat_db
       POSTGRES_USER: davomat_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -42,39 +42,21 @@ services:
       # Database Configuration
       DB_URL: jdbc:postgresql://postgres:5432/davomat_db
       DB_USERNAME: davomat_user
-      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      DB_PASSWORD: ${DB_PASSWORD}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      
       # JPA/Hibernate Configuration
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-      SPRING_JPA_SHOW_SQL: false
-      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: false
-      SPRING_JPA_OPEN_IN_VIEW: false
-      
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      SPRING_JPA_OPEN_IN_VIEW: "false"
+
       # Email Configuration (from .env file)
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
-      MAIL_USERNAME: ${MAIL_USERNAME:-your-email@gmail.com}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-your-app-password}
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: true
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
-      
-      # JWT Configuration (from .env file)
-      JWT_SECRET: ${JWT_SECRET:-my-super-secret-key-my-super-secret-key-my-super-secret-key-change-in-production}
-      JWT_EXPIRATION: 2592000000
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./logs:/app/logs
-    networks:
-      - davomat-network
-    restart: unless-stopped
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
 
-volumes:
-  postgres_data:
-    driver: local
-
-networks:
-  davomat-network:
-    driver: bridge
+      # JWT Configurati
