@@ -43,7 +43,7 @@ public class GroupController {
         return userService.findByEmail(userDetails.getUsername());
     }
 
-    @PostMapping("/addGroup")
+    @PostMapping({"/addGroup", "/create"})
     public ResponseEntity<ApiResponse<Group>> addGroup(@RequestBody AddGroup addGroup) {
         try {
             Group group = new Group();
@@ -66,7 +66,7 @@ public class GroupController {
         }
     }
 
-    @PutMapping("/editGroup")
+    @PutMapping({"/editGroup", "/update"})
     public ResponseEntity<ApiResponse<Group>> editGroup(@RequestBody Group group) {
         try {
             Group updated = service.edit(group);
@@ -85,7 +85,7 @@ public class GroupController {
         }
     }
 
-    @DeleteMapping("/deleteGroup/{id}")
+    @DeleteMapping({"/deleteGroup/{id}", "/delete/{id}"})
     public ResponseEntity<ApiResponse<Integer>> deleteGroup(@PathVariable long id) {
         try {
             int result = service.deleteById(id);

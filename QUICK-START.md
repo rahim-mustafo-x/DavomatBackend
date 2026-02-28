@@ -1,4 +1,6 @@
-# ⚡ Quick Start Guide
+# ⚡ Quick Start Guide (Production)
+
+This guide is for production deployment. For development with hot-reload, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## 🔒 Security First!
 
@@ -34,9 +36,13 @@ That's it! This will:
 
 ## 🌐 Access
 
-- **Application**: http://localhost:8080
+- **Application**: http://localhost:8080 (serves both frontend and backend)
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **WebSocket Test**: http://localhost:8080/websocket-test.html
+
+**Note**: In production mode, the frontend is built and served by the backend on port 8080.
+
+For development mode with separate ports (frontend:3000, backend:8080), see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## 📊 Default Credentials
 

@@ -71,7 +71,9 @@ A modern, enterprise-grade attendance management system built with Spring Boot a
 
 ## 🚀 Quick Start
 
-> **TL;DR**: Just run `./deploy.sh` and you're done! See [QUICK-START.md](QUICK-START.md) for the fastest way to get started.
+> **Development Mode**: See [DEVELOPMENT.md](DEVELOPMENT.md) for running frontend (port 3000) and backend (port 8080) separately with hot-reload.
+
+> **Production Mode**: Just run `./deploy.sh` - See [QUICK-START.md](QUICK-START.md) for the fastest deployment.
 
 > **⚠️ SECURITY**: Before deploying, read [SECURITY.md](SECURITY.md) and configure your `.env` file with secure credentials!
 
@@ -82,7 +84,24 @@ git clone <repository-url>
 cd davomat-backend
 ```
 
-### 2. Configure Environment Variables
+### 2. Choose Your Mode
+
+**Development Mode (Recommended for Development):**
+```bash
+# Frontend: http://localhost:3000 (hot-reload)
+# Backend: http://localhost:8080
+./start-dev.sh
+```
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development guide.
+
+**Production Mode:**
+```bash
+# Everything on http://localhost:8080
+./deploy.sh
+```
+See [QUICK-START.md](QUICK-START.md) for production deployment.
+
+### 3. Configure Environment Variables
 
 ```bash
 # Copy the example file
@@ -99,6 +118,25 @@ Required variables:
 - `JWT_SECRET` - Generate with: `openssl rand -base64 64`
 
 See [SECURITY.md](SECURITY.md) for detailed security configuration.
+
+---
+
+## 🛠️ Development vs Production
+
+### Development Mode
+- **Frontend**: http://localhost:3000 (Vite dev server with hot-reload)
+- **Backend**: http://localhost:8080 (Spring Boot)
+- **Use**: `./start-dev.sh` or see [DEVELOPMENT.md](DEVELOPMENT.md)
+- **Features**: Hot-reload, debugging, source maps
+
+### Production Mode
+- **Application**: http://localhost:8080 (serves both frontend and backend)
+- **Use**: `./deploy.sh` or see [QUICK-START.md](QUICK-START.md)
+- **Features**: Optimized build, Docker, PostgreSQL
+
+---
+
+## 📦 Build Scripts
 
 ### 3. Build Backend
 
