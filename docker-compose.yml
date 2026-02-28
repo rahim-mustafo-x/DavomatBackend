@@ -1,0 +1,80 @@
+# Docker Compose Configuration for Davomat Application
+# 
+# SECURITY: This file uses environment variables for sensitive data.
+# Create a .env file in the same directory with your credentials.
+# 
+# Required .env variables:
+#   DB_PASSWORD=your_secure_password
+#   MAIL_USERNAME=your-email@gmail.com
+#   MAIL_PASSWORD=your-app-password
+#
+# The .env file is ignored by git for security.
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: davomat-postgres
+    environment:
+      POSTGRES_DB: davomat_db
+      POSTGRES_USER: davomat_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U davomat_user -d davomat_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - davomat-network
+
+  davomat-app:
+    image: davomat-app:latest
+    container_name: davomat-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DB_URL: jdbc:postgresql://postgres:5432/davomat_db
+      DB_USERNAME: davomat_user
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      
+      # JPA/Hibernate Configuration
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_SHOW_SQL: false
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: false
+      SPRING_JPA_OPEN_IN_VIEW: false
+      
+      # Email Configuration (from .env file)
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USERNAME: ${MAIL_USERNAME:-your-email@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-your-app-password}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: true
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
+      
+      # JWT Configuration (from .env file)
+      JWT_SECRET: ${JWT_SECRET:-my-super-secret-key-my-super-secret-key-my-super-secret-key-change-in-production}
+      JWT_EXPIRATION: 2592000000
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - davomat-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  davomat-network:
+    driver: bridge

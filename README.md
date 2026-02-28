@@ -71,6 +71,10 @@ A modern, enterprise-grade attendance management system built with Spring Boot a
 
 ## 🚀 Quick Start
 
+> **TL;DR**: Just run `./deploy.sh` and you're done! See [QUICK-START.md](QUICK-START.md) for the fastest way to get started.
+
+> **⚠️ SECURITY**: Before deploying, read [SECURITY.md](SECURITY.md) and configure your `.env` file with secure credentials!
+
 ### 1. Clone the Repository
 
 ```bash
@@ -78,41 +82,104 @@ git clone <repository-url>
 cd davomat-backend
 ```
 
-### 2. Backend Setup
+### 2. Configure Environment Variables
 
 ```bash
-# Build the project
-./mvnw clean install
+# Copy the example file
+cp .env.example .env
 
-# Run the application
-./mvnw spring-boot:run
+# Edit with your actual credentials
+nano .env
 ```
 
-The backend will start on **http://localhost:8080**
+Required variables:
+- `DB_PASSWORD` - Your database password
+- `MAIL_USERNAME` - Your email address
+- `MAIL_PASSWORD` - Gmail app password
+- `JWT_SECRET` - Generate with: `openssl rand -base64 64`
 
-### 3. Frontend Setup
+See [SECURITY.md](SECURITY.md) for detailed security configuration.
+
+### 3. Build Backend
 
 ```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+./build-backend.sh
 ```
 
-The frontend will start on **http://localhost:5173**
+This will:
+- Run Maven clean package
+- Generate `target/davomat-backend.jar`
 
-### 4. Access the Application
+### 4. Build Frontend
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8080
+```bash
+./build-frontend.sh
+```
+
+This will:
+- Check if Node.js is installed
+- Install npm dependencies
+- Build React application
+- Generate `frontend/dist/`
+
+### 5. Run Application
+
+```bash
+# Option A: Run directly
+java -jar target/davomat-backend.jar
+
+# Option B: Build and run everything
+./start-prod.sh
+```
+
+### 6. Docker Deployment
+
+**Option A: One Command (Recommended)**
+```bash
+./deploy.sh
+```
+
+This single script will:
+1. Build backend JAR
+2. Build frontend
+3. Build Docker image
+4. Start with Docker Compose
+
+**Option B: Step by Step**
+```bash
+./build-backend.sh      # Step 1: Build JAR
+./build-frontend.sh     # Step 2: Build frontend
+./build-docker.sh       # Step 3: Build Docker image
+docker-compose up -d    # Step 4: Run with PostgreSQL
+```
+
+**View Logs:**
+```bash
+docker-compose logs -f
+```
+
+**Stop Services:**
+```bash
+docker-compose down
+```
+
+### 7. Access the Application
+
+- **Application**: http://localhost:8080
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **WebSocket Test**: http://localhost:8080/websocket-test.html
 
-## � Authentication
+## 🔒 Security
+
+**Important**: This application uses environment variables for sensitive configuration.
+
+- See [SECURITY.md](SECURITY.md) for complete security guide
+- Configure `.env` file before deployment (copy from `.env.example`)
+- Never commit `.env` or files with real credentials
+- Generate strong JWT secret: `openssl rand -base64 64`
+- Use Gmail app passwords, not regular passwords
+
+## 🔑 Authentication
 
 The system uses JWT (JSON Web Tokens) for secure authentication. Default accounts are created on first run:
 
@@ -294,29 +361,29 @@ davomat-backend/
 
 ### Backend Configuration
 
-Edit `src/main/resources/application.properties`:
+The application uses environment variables for sensitive data. See `.env.example` for required variables.
+
+Edit `src/main/resources/application.properties` for non-sensitive settings:
 
 ```properties
 # Server
 server.port=8080
 
-# Database (H2 for development)
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.username=sa
-spring.datasource.password=
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.show-sql=false
-spring.jpa.open-in-view=false
+# Database (uses environment variables)
+spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/davomat_db}
+spring.datasource.username=${DB_USERNAME:davomat_user}
+spring.datasource.password=${DB_PASSWORD:changeme}
 
-# JWT Configuration
-jwt.secret=your-secret-key-change-in-production
-jwt.expiration=86400000
+# JWT Configuration (uses environment variables)
+jwt.secret=${JWT_SECRET:change-in-production}
+jwt.expiration=${JWT_EXPIRATION:2592000000}
 
 # Logging
 logging.level.root=INFO
 logging.file.name=logs/davomat-app.log
-logging.pattern.file=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
 ```
+
+**Security Note**: Never hardcode credentials in application.properties!
 
 ### Frontend Configuration
 
@@ -370,19 +437,26 @@ npm run build
 
 ### Environment Variables
 
-Set these environment variables in production:
+Set these environment variables in production (or use `.env` file):
 
 ```bash
-# Backend
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/davomat
-export SPRING_DATASOURCE_USERNAME=your_username
-export SPRING_DATASOURCE_PASSWORD=your_password
-export JWT_SECRET=your-very-secure-secret-key
-export SPRING_PROFILES_ACTIVE=prod
+# Database
+export DB_URL=jdbc:postgresql://localhost:5432/davomat
+export DB_USERNAME=your_username
+export DB_PASSWORD=your_secure_password
 
-# Frontend
-export VITE_API_URL=https://your-api-domain.com
+# JWT
+export JWT_SECRET=your-very-secure-secret-key-512-bits-minimum
+
+# Email
+export MAIL_USERNAME=your-email@gmail.com
+export MAIL_PASSWORD=your-gmail-app-password
+
+# Spring Profile
+export SPRING_PROFILES_ACTIVE=prod
 ```
+
+See [SECURITY.md](SECURITY.md) for detailed security configuration.
 
 ### Database Migration
 

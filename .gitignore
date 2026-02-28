@@ -138,3 +138,10 @@ generated/
 # Documentation build
 docs/_build/
 site/
+
+# Security - Sensitive files
+.env
+*.env
+!.env.example
+application-*.properties
+!application.properties

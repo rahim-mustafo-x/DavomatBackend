@@ -24,6 +24,9 @@ public class DataLoader {
     @Bean
     public CommandLineRunner loadData() {
         return args -> {
+            // ⚠️ SECURITY WARNING: These are default development credentials
+            // Change these passwords immediately in production!
+            
             // Check if admin exists
             if (userDatabase.findByEmail("admin@davomat.uz") == null) {
                 UserDbModel admin = new UserDbModel(
@@ -38,6 +41,7 @@ public class DataLoader {
                 );
                 userDatabase.save(admin);
                 System.out.println("✅ Admin user created: admin@davomat.uz / admin123");
+                System.out.println("⚠️  WARNING: Change this password immediately!");
             }
 
             // Check if teacher exists
