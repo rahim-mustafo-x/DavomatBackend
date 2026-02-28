@@ -1,5 +1,5 @@
 # Dockerfile for Davomat Application
-# Prerequisites: Run build-backend.sh and build-frontend.sh first
+# Build backend and frontend before running: ./deploy.sh
 
 FROM eclipse-temurin:17-jre-alpine
 
@@ -8,10 +8,10 @@ WORKDIR /app
 # Install curl for healthcheck
 RUN apk add --no-cache curl
 
-# Copy pre-built JAR file (must exist in target/)
+# Copy pre-built JAR file
 COPY target/davomat-backend.jar /app/davomat-backend.jar
 
-# Copy pre-built frontend (must exist in frontend/dist/)
+# Copy pre-built frontend (create empty dir if not exists)
 COPY frontend/dist /app/static
 
 # Create logs directory

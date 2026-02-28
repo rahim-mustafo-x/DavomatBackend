@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# Build artifacts (except what we need)
+!target/davomat-backend.jar
+!frontend/dist
+
+# Frontend source (we only need dist)
+frontend/src
+frontend/node_modules
+frontend/public
+frontend/.env
+frontend/package.json
+frontend/package-lock.json
+frontend/vite.config.js
+frontend/index.html
+
+# Logs
+logs/
+*.log
+
+# Documentation
+README.md
+LICENSE
+*.md
+
+# Scripts
+*.sh
+
+# Environment
+.env
+.env.example
+
+# Maven
+.mvn
+mvnw
+mvnw.cmd
+pom.xml
+src/
+
+# Docker
+docker-compose.yml
+Dockerfile
