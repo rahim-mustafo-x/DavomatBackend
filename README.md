@@ -54,10 +54,12 @@ cp .env.example .env
 - **Application**: http://localhost:8080
 - **API Docs**: http://localhost:8080/swagger-ui.html
 - **WebSocket Test**: http://localhost:8080/websocket-test.html
+- **Database**: localhost:5433 (PostgreSQL - external access)
 
 **Development Mode:**
 - **Frontend**: http://localhost:3000 (hot-reload)
 - **Backend**: http://localhost:8080
+- **Database**: localhost:5433 (PostgreSQL)
 
 ## 🔑 Default Credentials
 
@@ -111,11 +113,11 @@ Create `.env` file:
 DB_NAME=davomat_db
 DB_USERNAME=davomat_user
 DB_PASSWORD=your_secure_password
-DB_PORT_HOST=5433
-DB_PORT_CONTAINER=5432
+DB_PORT_HOST=5433              # External access port (host machine)
+DB_PORT_CONTAINER=5432         # Internal container port
 
 # Application
-APP_PORT=8080
+APP_PORT=8080                  # Application port
 
 # Email (Gmail)
 MAIL_USERNAME=your-email@gmail.com
@@ -124,6 +126,12 @@ MAIL_PASSWORD=your-gmail-app-password
 # JWT Secret (generate with: openssl rand -base64 64)
 JWT_SECRET=your_generated_secret_here
 ```
+
+**Port Configuration:**
+- `DB_PORT_HOST=5433` - PostgreSQL accessible from host machine on port 5433
+- `DB_PORT_CONTAINER=5432` - PostgreSQL internal port inside Docker
+- `APP_PORT=8080` - Application accessible on port 8080
+- Frontend dev server runs on port 3000 (development mode only)
 
 ### Gmail App Password
 

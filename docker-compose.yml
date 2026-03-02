@@ -44,6 +44,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      
       # JPA/Hibernate Configuration
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
@@ -51,7 +52,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
       SPRING_JPA_OPEN_IN_VIEW: "false"
 
-      # Email Configuration (from .env file)
+      # Email Configuration
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
       MAIL_USERNAME: ${MAIL_USERNAME}
@@ -59,4 +60,18 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
 
-      # JWT Configurati
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: 2592000000
+    ports:
+      - "${APP_PORT}:8080"
+    restart: unless-stopped
+    networks:
+      - davomat-network
+
+volumes:
+  postgres_data:
+
+networks:
+  davomat-network:
+    driver: bridge

@@ -20,9 +20,20 @@ dev_mode() {
     echo ""
     echo "Backend: http://localhost:8080"
     echo "Frontend: http://localhost:3000 (hot-reload)"
+    echo "Database: localhost:5433 (PostgreSQL)"
     echo ""
     echo "======================================"
     echo ""
+
+    # Load .env file if exists
+    if [ -f ".env" ]; then
+        set -a
+        source .env
+        set +a
+        echo "✅ Loaded environment variables from .env"
+    else
+        echo "⚠️  .env file not found, using defaults"
+    fi
 
     # Check if Maven wrapper exists
     if [ ! -f "mvnw" ]; then
@@ -40,8 +51,15 @@ dev_mode() {
         fi
     fi
 
+    # Create logs directory if it doesn't exist
+    mkdir -p logs
+
     # Start backend in background
     echo "📦 Starting Backend (port 8080)..."
+    
+    # Set DB_URL for development (using host port 5433)
+    export DB_URL="jdbc:postgresql://localhost:${DB_PORT_HOST:-5433}/${DB_NAME:-davomat_db}"
+    
     java -jar target/davomat-backend.jar > logs/backend-dev.log 2>&1 &
     BACKEND_PID=$!
     echo "✅ Backend started (PID: $BACKEND_PID)"
