@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Davomat App - Xush Kelibsiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 50px;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 20px;
+            margin-bottom: 40px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .link-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .link-icon {
+            font-size: 40px;
+        }
+
+        .link-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .link-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .info-section {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .links {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📚</div>
+        <h1>Xush Kelibsiz!</h1>
+        <p class="subtitle">Davomat App Backend API</p>
+        
+        <div class="status">
+            <span class="status-dot"></span>
+            <span>Server Ishlayapti</span>
+        </div>
+
+        <div class="links">
+            <a href="/swagger-ui/index.html" class="link-card">
+                <div class="link-icon">📖</div>
+                <div class="link-title">API Hujjatlari</div>
+                <div class="link-desc">Swagger UI</div>
+            </a>
+
+            <a href="/websocket-test.html" class="link-card">
+                <div class="link-icon">🔌</div>
+                <div class="link-title">WebSocket Test</div>
+                <div class="link-desc">Real-time test</div>
+            </a>
+
+            <a href="/actuator/health" class="link-card">
+                <div class="link-icon">💚</div>
+                <div class="link-title">Health Check</div>
+                <div class="link-desc">Server holati</div>
+            </a>
+        </div>
+
+        <div class="info-section">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Version</div>
+                    <div class="info-value">1.0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Port</div>
+                    <div class="info-value">8080</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">✓ Active</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Environment</div>
+                    <div class="info-value" id="env">Production</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 Davomat App. Barcha huquqlar himoyalangan.</p>
+            <p style="margin-top: 10px;">
+                <a href="mailto:rahim.mustafo.x@gmail.com" style="color: #667eea; text-decoration: none;">
+                    rahim.mustafo.x@gmail.com
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Check if running on localhost
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            document.getElementById('env').textContent = 'Development';
+        }
+
+        // Add current time
+        const now = new Date();
+        const timeStr = now.toLocaleString('uz-UZ', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const footer = document.querySelector('.footer');
+        const timeInfo = document.createElement('p');
+        timeInfo.style.marginTop = '10px';
+        timeInfo.style.fontSize = '12px';
+        timeInfo.textContent = `Server vaqti: ${timeStr}`;
+        footer.insertBefore(timeInfo, footer.lastElementChild);
+    </script>
+</body>
+</html>
