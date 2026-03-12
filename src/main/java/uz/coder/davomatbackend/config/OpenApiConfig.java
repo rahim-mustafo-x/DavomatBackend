@@ -1,15 +1,21 @@
 package uz.coder.davomatbackend.config;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenApiConfig {
+
+    private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
     @Value("${HOST_IP:192.168.1.150}")
     private String hostIp;
@@ -19,11 +25,49 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        Server server = new Server();
-        server.setUrl("http://" + hostIp + ":" + appPort);
-        server.setDescription("Davomat Server");
-
         return new OpenAPI()
-                .servers(List.of(server));
+                .info(new Info()
+                        .title("Davomat Backend API")
+                        .version("1.0")
+                        .description("""
+                                ## Davomat App Backend API
+                                
+                                ### Authentication
+                                Most endpoints require JWT authentication. Use the `/auth/login` endpoint to get a token.
+                                
+                                ### WebSocket Support
+                                Real-time notifications are available via WebSocket with JWT authentication:
+                                - **Endpoint:** `/ws` (STOMP over SockJS)
+                                - **Authentication:** JWT token required in Authorization header
+                                - **Test Page:** [WebSocket Test](/websocket-test.html)
+                                - **Info API:** [GET /api/websocket/info](/swagger-ui/index.html#/WebSocket%20Info/getWebSocketInfo)
+                                
+                                **User Queues (automatically routed to authenticated user):**
+                                - `/user/queue/students` - Your student notifications
+                                - `/user/queue/courses` - Your course notifications
+                                - `/user/queue/groups` - Your group notifications
+                                - `/user/queue/attendance` - Your attendance notifications
+                                
+                                Messages are automatically sent to the correct user based on their JWT token.
+                                """)
+                        .contact(new Contact()
+                                .name("Davomat Team")
+                                .email("rahim.mustafo.x@gmail.com")
+                        )
+                )
+                .addServersItem(new Server()
+                        .url("http://" + hostIp + ":" + appPort)
+                        .description("Davomat Server")
+                )
+                .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
+                .components(new Components()
+                        .addSecuritySchemes(SECURITY_SCHEME_NAME,
+                                new SecurityScheme()
+                                        .name(SECURITY_SCHEME_NAME)
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        )
+                );
     }
 }
