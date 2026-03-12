@@ -1,0 +1,173 @@
+.payment-expired-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.payment-expired-content {
+  background: white;
+  border-radius: 24px;
+  padding: 60px 50px;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-expired-icon {
+  color: #dc2626;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.payment-expired-content h1 {
+  font-size: 2.5rem;
+  color: #1f2937;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.main-message {
+  font-size: 1.1rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.sub-message {
+  font-size: 0.95rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin-bottom: 40px;
+}
+
+.payment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.btn-pay {
+  padding: 18px 32px;
+  background: linear-gradient(135deg, #0088cc 0%, #0066aa 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+}
+
+.btn-pay:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+}
+
+.btn-logout-secondary {
+  padding: 14px 32px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-logout-secondary:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.telegram-info-box {
+  background: #f0f9ff;
+  border: 2px solid #bfdbfe;
+  border-radius: 16px;
+  padding: 25px;
+  text-align: left;
+}
+
+.telegram-info-box p {
+  margin: 0 0 10px 0;
+  color: #1e40af;
+  font-size: 1rem;
+}
+
+.telegram-info-box p:last-child {
+  margin-bottom: 0;
+}
+
+.telegram-info-box strong {
+  color: #0088cc;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.info-text {
+  font-size: 0.9rem !important;
+  color: #3b82f6 !important;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-expired-content {
+    padding: 40px 30px;
+  }
+
+  .payment-expired-content h1 {
+    font-size: 2rem;
+  }
+
+  .main-message {
+    font-size: 1rem;
+  }
+
+  .btn-pay {
+    padding: 16px 28px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-expired-content {
+    padding: 30px 20px;
+  }
+
+  .payment-expired-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .payment-expired-icon svg {
+    width: 60px;
+    height: 60px;
+  }
+}

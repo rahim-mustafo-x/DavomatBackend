@@ -15,6 +15,7 @@ import api from '../api/axios'
 import { useAuthStore } from '../store/authStore'
 import { ROLES } from '../constants/roles'
 import PaymentBanner from '../components/PaymentBanner'
+import PaymentExpiredScreen from '../components/PaymentExpiredScreen'
 import './StudentDashboard.css'
 
 export default function StudentDashboard() {
@@ -23,6 +24,7 @@ export default function StudentDashboard() {
   const [attendance, setAttendance] = useState([])
   const [balance, setBalance] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [paymentExpired, setPaymentExpired] = useState(false)
   
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
@@ -35,7 +37,33 @@ export default function StudentDashboard() {
     }
   }, [user, navigate])
 
+  // Check payment status
   useEffect(() => {
+    if (!user || user.role === 'ROLE_ADMIN') {
+      setPaymentExpired(false)
+      return
+    }
+
+    if (!user.payedDate) {
+      setPaymentExpired(true)
+      return
+    }
+
+    const payedDate = new Date(user.payedDate)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    payedDate.setHours(0, 0, 0, 0)
+
+    if (payedDate < today) {
+      setPaymentExpired(true)
+    } else {
+      setPaymentExpired(false)
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (paymentExpired) return // Don't load data if payment expired
+    
     if (activeSection === 'courses') {
       loadCourses()
     } else if (activeSection === 'attendance') {
@@ -204,6 +232,10 @@ export default function StudentDashboard() {
       </div>
     </div>
   )
+  // Show payment expired screen if payment is expired
+  if (paymentExpired) {
+    return <PaymentExpiredScreen />
+  }
 
   return (
     <>
