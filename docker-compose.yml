@@ -1,77 +1,32 @@
-# Docker Compose Configuration for Davomat Application
-# 
-# SECURITY: This file uses environment variables for sensitive data.
-# Create a .env file in the same directory with your credentials.
-# 
-# Required .env variables:
-#   DB_PASSWORD=your_secure_password
-#   MAIL_USERNAME=your-email@gmail.com
-#   MAIL_PASSWORD=your-app-password
-#
-# The .env file is ignored by git for security.
-
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: davomat-postgres
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "${DB_PORT_HOST}:${DB_PORT_CONTAINER}"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - davomat-network
-
   davomat-app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: davomat-app
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
-      # Database Configuration
-      DB_URL: jdbc:postgresql://postgres:${DB_PORT_CONTAINER}/${DB_NAME}
+      DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      
-      # JPA/Hibernate Configuration
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-      SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      SPRING_JPA_OPEN_IN_VIEW: "false"
-
-      # Email Configuration
-      MAIL_HOST: smtp.gmail.com
-      MAIL_PORT: 587
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-
-      # JWT Configuration
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: 2592000000
     ports:
-      - "${APP_PORT}:8080"
+      - "${APP_PORT:-8080}:8080"
     restart: unless-stopped
-    networks:
-      - davomat-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
-volumes:
-  postgres_data:
-
-networks:
-  davomat-network:
-    driver: bridge
+  davomat-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: davomat-frontend
+    environment:
+      - VITE_API_URL=http://${HOST_IP}:${APP_PORT:-8080}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - davomat-app

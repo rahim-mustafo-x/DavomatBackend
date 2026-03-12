@@ -1,149 +1,97 @@
 #!/bin/bash
 set -e
 
-# Function to display usage
 usage() {
     echo "Usage: $0 [dev|prod]"
     echo ""
-    echo "  dev   - Start development mode (backend:8080, frontend:3000 with hot-reload)"
-    echo "  prod  - Deploy production mode with Docker (everything on :8080)"
+    echo "  dev   - Backend JAR + Frontend npm run dev (no Docker)"
+    echo "  prod  - Backend + Frontend in Docker (8080 + 3000)"
     echo ""
-    echo "If no argument provided, defaults to production mode."
     exit 1
 }
 
-# Development mode
+# Development mode (no Docker)
 dev_mode() {
     echo "======================================"
     echo "🚀 Starting Development Environment"
     echo "======================================"
-    echo ""
 
-    # Load .env file if exists
     if [ -f ".env" ]; then
-        set -a
-        source .env
-        set +a
-        echo "✅ Loaded environment variables from .env"
+        set -a; source .env; set +a
+        echo "✅ Loaded .env"
     else
-        echo "⚠️  .env file not found, using defaults"
+        echo "⚠️  .env not found, using defaults"
     fi
 
     echo ""
     echo "Backend:  http://localhost:8080"
     echo "Frontend: http://localhost:3000 (hot-reload)"
-    echo "Database: ${DB_URL:-jdbc:postgresql://localhost:5432/davomat_db}"
-    echo ""
-    echo "======================================"
+    echo "Database: ${DB_URL}"
     echo ""
 
-    # Check if Maven wrapper exists
-    if [ ! -f "mvnw" ]; then
-        echo "❌ Maven wrapper not found"
-        exit 1
-    fi
+    # Generate frontend/.env
+    echo "VITE_API_URL=http://localhost:8080" > frontend/.env
+    echo "✅ Generated frontend/.env"
 
-    # Check if backend JAR exists, if not build it
+    if [ ! -f "mvnw" ]; then echo "❌ Maven wrapper not found"; exit 1; fi
+
     if [ ! -f "target/davomat-backend.jar" ]; then
-        echo "⚠️  Backend JAR not found. Building..."
+        echo "⚠️  JAR not found. Building..."
         ./mvnw clean package -DskipTests
-        if [ ! -f "target/davomat-backend.jar" ]; then
-            echo "❌ Backend build failed"
-            exit 1
-        fi
     fi
 
-    # Create logs directory if it doesn't exist
     mkdir -p logs
 
-    # Start backend in background
     echo "📦 Starting Backend (port 8080)..."
-    # DB_URL .env dan keladi — o'zgartirish shart emas
     java -jar target/davomat-backend.jar > logs/backend-dev.log 2>&1 &
     BACKEND_PID=$!
     echo "✅ Backend started (PID: $BACKEND_PID)"
-    echo ""
 
-    # Wait for backend to start
-    echo "⏳ Waiting for backend to be ready..."
-    sleep 5
-
-    # Check if backend is running
-    if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
-        echo "✅ Backend is ready!"
-    else
-        echo "⚠️  Backend might still be starting..."
-    fi
-    echo ""
-
-    # Cleanup on exit
     trap "echo ''; echo '🛑 Stopping backend...'; kill $BACKEND_PID 2>/dev/null; exit" INT TERM EXIT
 
-    # Start frontend (blocking)
+    echo "⏳ Waiting for backend..."
+    sleep 5
+
+    echo ""
     echo "🎨 Starting Frontend (port 3000)..."
     cd frontend
     npm run dev
 }
 
-# Production mode
+# Production mode (both in Docker)
 prod_mode() {
     echo "======================================"
     echo "🚀 Davomat Production Deployment"
     echo "======================================"
 
-    # Check prerequisites
-    command -v java >/dev/null 2>&1 || { echo "❌ Java not found. Install Java 17+"; exit 1; }
-    command -v node >/dev/null 2>&1 || { echo "❌ Node.js not found. Install Node.js 18+"; exit 1; }
-    command -v docker >/dev/null 2>&1 || { echo "❌ Docker not found. Install Docker"; exit 1; }
+    command -v docker >/dev/null 2>&1 || { echo "❌ Docker not found"; exit 1; }
 
-    # Check .env file
     if [ ! -f ".env" ]; then
-        echo "❌ .env file not found"
-        echo "Run: cp .env.example .env"
-        echo "Then edit .env with your credentials"
+        echo "❌ .env not found. Run: cp .env.example .env"
         exit 1
     fi
 
-    # Load .env
-    set -a
-    source .env
-    set +a
+    set -a; source .env; set +a
 
-    echo "✅ Prerequisites check passed"
+    echo "✅ Prerequisites OK"
     echo "🗄️  Database: ${DB_URL}"
+    echo "🌐 Host IP:   ${HOST_IP}"
     echo ""
 
-    # Check if Maven wrapper exists
-    if [ ! -f "mvnw" ]; then
-        echo "❌ Maven wrapper not found"
-        exit 1
-    fi
+    # Generate frontend/.env for Docker build
+    echo "VITE_API_URL=http://${HOST_IP}:${APP_PORT:-8080}" > frontend/.env
+    echo "✅ Generated frontend/.env (VITE_API_URL=http://${HOST_IP}:${APP_PORT:-8080})"
+    echo ""
 
-    # Build backend
-    echo "📦 Building backend..."
+    if [ ! -f "mvnw" ]; then echo "❌ Maven wrapper not found"; exit 1; fi
+
+    echo "📦 Building backend JAR..."
     ./mvnw clean package -DskipTests
-    if [ ! -f "target/davomat-backend.jar" ]; then
-        echo "❌ Backend build failed"
-        exit 1
-    fi
-    echo "✅ Backend built: target/davomat-backend.jar"
+    echo "✅ Backend built"
     echo ""
 
-    # Build frontend
-    echo "🎨 Building frontend..."
-    cd frontend
-    npm install --silent
-    npm run build
-    if [ ! -d "dist" ]; then
-        echo "❌ Frontend build failed"
-        exit 1
-    fi
-    cd ..
-    echo "✅ Frontend built: frontend/dist/"
-    echo ""
-
-    # Build and start Docker
-    echo "🐳 Building Docker image..."
+    echo "🐳 Building Docker images..."
+    docker compose down 2>/dev/null || true
     docker compose build
     echo ""
 
@@ -155,17 +103,15 @@ prod_mode() {
     echo "✅ Deployment Complete!"
     echo "======================================"
     echo ""
-    echo "🌐 Application: http://localhost:${APP_PORT:-8080}"
-    echo "📚 API Docs:    http://localhost:${APP_PORT:-8080}/swagger-ui.html"
-    echo "🗄️  Database:   ${DB_URL}"
+    echo "🌐 Frontend: http://${HOST_IP}:3000"
+    echo "🔌 Backend:  http://${HOST_IP}:8080"
+    echo "📚 API Docs: http://${HOST_IP}:8080/swagger-ui.html"
     echo ""
-    echo "📊 View logs: docker compose logs -f"
-    echo "🛑 Stop:      docker compose down"
-    echo ""
+    echo "📊 Logs:  docker compose logs -f"
+    echo "🛑 Stop:  docker compose down"
     echo "======================================"
 }
 
-# Main script logic
 MODE="${1:-prod}"
 
 case "$MODE" in
