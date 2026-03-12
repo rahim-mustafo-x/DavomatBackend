@@ -97,6 +97,20 @@ EOF
     echo "✅ Backend built"
     echo ""
 
+    mkdir -p frontend/dist
+
+    echo "🎨 Building frontend..."
+    cd frontend
+    npm install --silent
+    npm run build
+    if [ ! -d "dist" ]; then
+        echo "❌ Frontend build failed"
+        exit 1
+    fi
+    cd ..
+    echo "✅ Frontend built: frontend/dist/"
+    echo ""
+
     echo "🐳 Building Docker images..."
     docker compose down 2>/dev/null || true
     docker compose build
