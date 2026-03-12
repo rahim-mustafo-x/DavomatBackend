@@ -1,11 +1,16 @@
 package uz.coder.davomatbackend.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import uz.coder.davomatbackend.service.EmailService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import uz.coder.davomatbackend.service.EmailService;
 
 @RestController
 @RequestMapping("/api/contact")
@@ -36,7 +41,21 @@ public class ContactController {
 
             return ResponseEntity.ok("Xabaringiz yuborildi!");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Serverda xatolik yuz berdi");
+            return ResponseEntity.status(500).body("Serverda xatolik yuz berdi: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testEmail() {
+        try {
+            emailService.sendEmail(
+                    toEmail,
+                    "Test Email - Davomat App",
+                    "Bu test xabar. Agar bu xabarni ko'rsangiz, email konfiguratsiyasi to'g'ri ishlayapti!"
+            );
+            return ResponseEntity.ok("Test email yuborildi: " + toEmail);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Email yuborishda xatolik: " + e.getMessage());
         }
     }
 }

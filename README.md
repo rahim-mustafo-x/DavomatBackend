@@ -61,6 +61,31 @@ cp .env.example .env
 - **Backend**: http://localhost:8080
 - **Database**: localhost:5433 (PostgreSQL)
 
+## 📧 Email Configuration Testing
+
+After deployment, test email functionality:
+
+**Option 1: Using Landing Page**
+1. Go to `http://192.168.1.150:8080`
+2. Scroll to Contact section
+3. Click "Test Email Yuborish" button
+4. Check your email: `rahim.mustafo.x@gmail.com`
+
+**Option 2: Using API**
+```bash
+curl http://192.168.1.150:8080/api/contact/test
+```
+
+**Option 3: Using Contact Form**
+1. Fill out the contact form on landing page
+2. Submit the form
+3. Check your email for the message
+
+If email doesn't arrive, check:
+- Gmail app password is correct in `.env`
+- Gmail account has 2FA enabled
+- Check spam folder
+
 ## 🔑 Default Credentials
 
 | Role | Email | Password |
@@ -104,20 +129,18 @@ This will:
 
 ## 🔒 Security Configuration
 
-### Required Environment Variables
+### Backend Environment Variables (.env)
 
-Create `.env` file:
+Create `.env` file in project root:
 
 ```env
 # Database
 DB_NAME=davomat_db
 DB_USERNAME=davomat_user
 DB_PASSWORD=your_secure_password
-DB_PORT_HOST=5433              # External access port (host machine)
-DB_PORT_CONTAINER=5432         # Internal container port
-
-# Application
-APP_PORT=8080                  # Application port
+DB_URL=jdbc:postgresql://192.168.1.150:5432/davomat_db
+HOST_IP=192.168.1.150
+APP_PORT=8080
 
 # Email (Gmail)
 MAIL_USERNAME=your-email@gmail.com
@@ -127,9 +150,20 @@ MAIL_PASSWORD=your-gmail-app-password
 JWT_SECRET=your_generated_secret_here
 ```
 
+### Frontend Environment Variables (frontend/.env)
+
+Create `frontend/.env` file:
+
+```env
+# API Base URL (your server IP)
+VITE_API_URL=http://192.168.1.150:8080
+
+# WebSocket URL
+VITE_WS_URL=http://192.168.1.150:8080/ws
+```
+
 **Port Configuration:**
-- `DB_PORT_HOST=5433` - PostgreSQL accessible from host machine on port 5433
-- `DB_PORT_CONTAINER=5432` - PostgreSQL internal port inside Docker
+- `HOST_IP` - Your server IP address (e.g., 192.168.1.150)
 - `APP_PORT=8080` - Application accessible on port 8080
 - Frontend dev server runs on port 3000 (development mode only)
 

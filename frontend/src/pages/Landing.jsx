@@ -1,13 +1,21 @@
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { getDashboardPath } from '../constants/roles'
-import { CheckCircle, BarChart3, Bell, Smartphone, LogIn, Moon, Sun } from 'lucide-react'
+import { CheckCircle, BarChart3, Bell, Smartphone, LogIn, Moon, Sun, Mail, User, MessageSquare } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
+import api from '../api/axios'
 import './Landing.css'
 
 export default function Landing() {
   const { user } = useAuthStore()
   const [darkMode, setDarkMode] = useState(false)
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    message: ''
+  })
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
@@ -28,6 +36,35 @@ export default function Landing() {
     }
   }
 
+  const handleContactSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      toast.error('Iltimos, barcha maydonlarni to\'ldiring')
+      return
+    }
+
+    setSending(true)
+    try {
+      await api.post('/api/contact/contact', contactForm)
+      toast.success('Xabaringiz yuborildi! Tez orada javob beramiz.')
+      setContactForm({ name: '', email: '', message: '' })
+    } catch (error) {
+      toast.error('Xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleTestEmail = async () => {
+    try {
+      const response = await api.get('/api/contact/test')
+      toast.success(response.data)
+    } catch (error) {
+      toast.error('Test email yuborishda xatolik: ' + (error.response?.data || error.message))
+    }
+  }
+
   return (
     <div className="landing">
       <nav className="navbar">
@@ -35,6 +72,8 @@ export default function Landing() {
           <div className="nav-content">
             <div className="logo">📊 Davomat App</div>
             <div className="nav-links">
+              <a href="#features" className="nav-link">Features</a>
+              <a href="#contact" className="nav-link">Contact</a>
               <button onClick={toggleTheme} className="theme-toggle">
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
@@ -103,6 +142,78 @@ export default function Landing() {
               </div>
               <h3>Mobile Friendly</h3>
               <p>Access from any device with our responsive design</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" className="contact-section">
+        <div className="container">
+          <h2 className="section-title">Biz bilan bog'laning</h2>
+          <p className="section-subtitle">Savollaringiz bormi? Biz bilan bog'laning!</p>
+          
+          <div className="contact-content">
+            <form onSubmit={handleContactSubmit} className="contact-form">
+              <div className="form-group">
+                <label>
+                  <User size={20} />
+                  Ismingiz
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ismingizni kiriting"
+                  value={contactForm.name}
+                  onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>
+                  <Mail size={20} />
+                  Email
+                </label>
+                <input
+                  type="email"
+                  placeholder="email@example.com"
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>
+                  <MessageSquare size={20} />
+                  Xabar
+                </label>
+                <textarea
+                  rows="5"
+                  placeholder="Xabaringizni yozing..."
+                  value={contactForm.message}
+                  onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                  required
+                ></textarea>
+              </div>
+              
+              <button type="submit" className="btn btn-primary btn-large" disabled={sending}>
+                {sending ? 'Yuborilmoqda...' : 'Xabar yuborish'}
+              </button>
+            </form>
+            
+            <div className="contact-info">
+              <div className="info-card">
+                <Mail size={32} />
+                <h3>Email</h3>
+                <p>rahim.mustafo.x@gmail.com</p>
+                <button 
+                  onClick={handleTestEmail} 
+                  className="btn btn-secondary"
+                  style={{ marginTop: '16px', width: '100%' }}
+                >
+                  Test Email Yuborish
+                </button>
+              </div>
             </div>
           </div>
         </div>

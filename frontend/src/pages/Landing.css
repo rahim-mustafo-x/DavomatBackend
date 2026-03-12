@@ -207,3 +207,134 @@ body.dark-mode .feature-card h3 {
     font-size: 1.8rem;
   }
 }
+
+/* Contact Section */
+.contact-section {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.contact-section .section-subtitle {
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 50px;
+  font-size: 1.1rem;
+}
+
+.contact-content {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.contact-form {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.contact-form .form-group {
+  margin-bottom: 24px;
+}
+
+.contact-form label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-card {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+}
+
+.info-card svg {
+  color: #667eea;
+  margin-bottom: 16px;
+}
+
+.info-card h3 {
+  color: #1e293b;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+}
+
+.info-card p {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .contact-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .contact-form {
+    padding: 30px 20px;
+  }
+}
+
+/* Navbar Links */
+.nav-link {
+  color: #1e293b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+  padding: 8px 16px;
+}
+
+.nav-link:hover {
+  color: #667eea;
+}
+
+.dark-mode .nav-link {
+  color: #e2e8f0;
+}
+
+.dark-mode .nav-link:hover {
+  color: #a5b4fc;
+}

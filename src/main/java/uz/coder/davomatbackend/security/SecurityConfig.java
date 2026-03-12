@@ -1,5 +1,7 @@
 package uz.coder.davomatbackend.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -20,8 +22,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import uz.coder.davomatbackend.jwt.JwtAuthFilter;
 import uz.coder.davomatbackend.jwt.JwtService;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -83,17 +83,37 @@ public class SecurityConfig {
 
                 // Authorization qoidalari
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/telegram/**").permitAll()
                         .requestMatchers("/api/contact/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        
+                        // Swagger/OpenAPI
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/websocket-test.html"
+                                "/swagger-ui.html"
                         ).permitAll()
+                        
+                        // Static resources
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/websocket-test.html",
+                                "/assets/**",
+                                "/favicon.ico",
+                                "/*.js",
+                                "/*.css",
+                                "/*.png",
+                                "/*.jpg",
+                                "/*.svg"
+                        ).permitAll()
+                        
+                        // API endpoints require authentication
                         .requestMatchers("/api/**").authenticated()
+                        
+                        // All other requests
                         .anyRequest().permitAll()
                 )
 
