@@ -152,7 +152,9 @@ JWT_SECRET=your_generated_secret_here
 
 ### Frontend Environment Variables (frontend/.env)
 
-Create `frontend/.env` file:
+**Note:** The `deploy.sh` script automatically generates `frontend/.env` based on your root `.env` file.
+
+For manual setup, create `frontend/.env` file:
 
 ```env
 # API Base URL (your server IP)
@@ -161,6 +163,10 @@ VITE_API_URL=http://192.168.1.150:8080
 # WebSocket URL
 VITE_WS_URL=http://192.168.1.150:8080/ws
 ```
+
+**Automatic Generation:**
+- `./deploy.sh dev` creates: `VITE_API_URL=http://localhost:8080`
+- `./deploy.sh prod` creates: `VITE_API_URL=http://${HOST_IP}:${APP_PORT}`
 
 **Port Configuration:**
 - `HOST_IP` - Your server IP address (e.g., 192.168.1.150)
