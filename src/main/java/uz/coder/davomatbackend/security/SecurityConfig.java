@@ -15,9 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import uz.coder.davomatbackend.jwt.JwtAuthFilter;
 import uz.coder.davomatbackend.jwt.JwtService;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +30,7 @@ public class SecurityConfig {
     private final JwtService jwtService;
     private final UserDetailsService userService;
 
-    public SecurityConfig(JwtService jwtService,@Lazy UserDetailsService userService) {
+    public SecurityConfig(JwtService jwtService, @Lazy UserDetailsService userService) {
         this.jwtService = jwtService;
         this.userService = userService;
     }
@@ -36,6 +40,32 @@ public class SecurityConfig {
         return new JwtAuthFilter(jwtService, userService);
     }
 
+    // ✅ CORS bean — Spring Security shu bean ni ishlatadi
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        // ✅ Har qanday origin ruxsat — prod da nginx orqali himoyalanadi
+        config.setAllowedOriginPatterns(List.of("*"));
+
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+
+        config.setAllowedHeaders(List.of("*"));
+
+        // JWT token uchun
+        config.setExposedHeaders(List.of("Authorization"));
+
+        config.setAllowCredentials(true);
+
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource configSource = new UrlBasedCorsConfigurationSource();
+        configSource.registerCorsConfiguration("/**", config);
+        return configSource;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -43,66 +73,41 @@ public class SecurityConfig {
                 // ❌ CSRF o'chiq (JWT uchun shart)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // 🌐 CORS configuration
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration corsConfig = new CorsConfiguration();
-                    corsConfig.setAllowedOrigins(java.util.List.of(
-                        "http://localhost:5173",
-                        "http://localhost:3000", 
-                        "http://localhost:8080"
-                    ));
-                    corsConfig.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    corsConfig.setAllowedHeaders(java.util.List.of("*"));
-                    corsConfig.setAllowCredentials(true);
-                    return corsConfig;
-                }))
+                // ✅ CORS — bean dan oladi
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 🔐 Session yo'q (STATLESS)
+                // Session yo`q (STATELESS)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 🔑 Authorization qoidalari
+                // Authorization qoidalari
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 AUTH (login, register)
                         .requestMatchers("/auth/**").permitAll()
-
-                        // 🔓 Telegram API public (tokensiz ishlaydi)
                         .requestMatchers("/api/telegram/**").permitAll()
                         .requestMatchers("/api/contact/**").permitAll()
-
-                        // 🔓 WebSocket endpoints
                         .requestMatchers("/ws/**").permitAll()
-
-                        // 🔓 SWAGGER - Public (no login required)
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/websocket-test.html"
                         ).permitAll()
-
-                        // 🔐 Qolgan API faqat TOKEN bilan
                         .requestMatchers("/api/**").authenticated()
-
-                        // qolganlar
                         .anyRequest().permitAll()
                 )
 
-
-                // 🔍 JWT FILTER
+                // JWT filter
                 .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 🔐 Password encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 🔑 AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config

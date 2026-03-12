@@ -18,12 +18,6 @@ dev_mode() {
     echo "🚀 Starting Development Environment"
     echo "======================================"
     echo ""
-    echo "Backend: http://localhost:8080"
-    echo "Frontend: http://localhost:3000 (hot-reload)"
-    echo "Database: localhost:5433 (PostgreSQL)"
-    echo ""
-    echo "======================================"
-    echo ""
 
     # Load .env file if exists
     if [ -f ".env" ]; then
@@ -34,6 +28,14 @@ dev_mode() {
     else
         echo "⚠️  .env file not found, using defaults"
     fi
+
+    echo ""
+    echo "Backend:  http://localhost:8080"
+    echo "Frontend: http://localhost:3000 (hot-reload)"
+    echo "Database: ${DB_URL:-jdbc:postgresql://localhost:5432/davomat_db}"
+    echo ""
+    echo "======================================"
+    echo ""
 
     # Check if Maven wrapper exists
     if [ ! -f "mvnw" ]; then
@@ -56,10 +58,7 @@ dev_mode() {
 
     # Start backend in background
     echo "📦 Starting Backend (port 8080)..."
-    
-    # Set DB_URL for development (using host port 5433)
-    export DB_URL="jdbc:postgresql://localhost:${DB_PORT_HOST:-5433}/${DB_NAME:-davomat_db}"
-    
+    # DB_URL .env dan keladi — o'zgartirish shart emas
     java -jar target/davomat-backend.jar > logs/backend-dev.log 2>&1 &
     BACKEND_PID=$!
     echo "✅ Backend started (PID: $BACKEND_PID)"
@@ -77,13 +76,13 @@ dev_mode() {
     fi
     echo ""
 
-    # Start frontend
+    # Cleanup on exit
+    trap "echo ''; echo '🛑 Stopping backend...'; kill $BACKEND_PID 2>/dev/null; exit" INT TERM EXIT
+
+    # Start frontend (blocking)
     echo "🎨 Starting Frontend (port 3000)..."
     cd frontend
     npm run dev
-
-    # Cleanup on exit
-    trap "echo ''; echo 'Stopping backend...'; kill $BACKEND_PID 2>/dev/null; exit" INT TERM EXIT
 }
 
 # Production mode
@@ -105,7 +104,13 @@ prod_mode() {
         exit 1
     fi
 
+    # Load .env
+    set -a
+    source .env
+    set +a
+
     echo "✅ Prerequisites check passed"
+    echo "🗄️  Database: ${DB_URL}"
     echo ""
 
     # Check if Maven wrapper exists
@@ -124,9 +129,6 @@ prod_mode() {
     echo "✅ Backend built: target/davomat-backend.jar"
     echo ""
 
-    # Create dist directory if it doesn't exist
-    mkdir -p frontend/dist
-
     # Build frontend
     echo "🎨 Building frontend..."
     cd frontend
@@ -142,23 +144,23 @@ prod_mode() {
 
     # Build and start Docker
     echo "🐳 Building Docker image..."
-    docker-compose build
+    docker compose build
     echo ""
 
     echo "🚀 Starting services..."
-    docker-compose up -d
+    docker compose up -d
 
     echo ""
     echo "======================================"
     echo "✅ Deployment Complete!"
     echo "======================================"
     echo ""
-    echo "🌐 Application: http://localhost:8080"
-    echo "📚 API Docs: http://localhost:8080/swagger-ui.html"
-    echo "🔌 WebSocket Test: http://localhost:8080/websocket-test.html"
+    echo "🌐 Application: http://localhost:${APP_PORT:-8080}"
+    echo "📚 API Docs:    http://localhost:${APP_PORT:-8080}/swagger-ui.html"
+    echo "🗄️  Database:   ${DB_URL}"
     echo ""
-    echo "📊 View logs: docker-compose logs -f"
-    echo "🛑 Stop: docker-compose down"
+    echo "📊 View logs: docker compose logs -f"
+    echo "🛑 Stop:      docker compose down"
     echo ""
     echo "======================================"
 }
