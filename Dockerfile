@@ -11,9 +11,6 @@ RUN apk add --no-cache curl
 # Copy pre-built JAR file
 COPY target/davomat-backend.jar /app/davomat-backend.jar
 
-# Copy pre-built frontend (create empty dir if not exists)
-COPY frontend/dist /app/static
-
 # Create logs directory
 RUN mkdir -p /app/logs
 
