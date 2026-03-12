@@ -16,6 +16,7 @@ public class Strings {
     public static final String THERE_IS_NO_SUCH_A_GROUP = "Bunday guruh mavjud emas";
     public static final String THERE_IS_NO_SUCH_AN_ATTENDANCE = "Bunday davomat mavjud emas";
     public static final String YOUR_BALANCE_IS_EMPTY = "Sizni balansingiz 0ga teng";
+    public static final String PAYMENT_EXPIRED = "To'lov muddati tugagan. Iltimos, to'lovni yangilang";
     public static final String THIS_PHONE_NUMBER_TAKEN = "Bu raqam orqali ro'yhatdan o'tilgan";
     //Student
     public static final String NUMBER = "№";

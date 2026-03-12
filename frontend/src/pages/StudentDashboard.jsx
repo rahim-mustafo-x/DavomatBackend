@@ -14,6 +14,7 @@ import {
 import api from '../api/axios'
 import { useAuthStore } from '../store/authStore'
 import { ROLES } from '../constants/roles'
+import PaymentBanner from '../components/PaymentBanner'
 import './StudentDashboard.css'
 
 export default function StudentDashboard() {
@@ -205,7 +206,9 @@ export default function StudentDashboard() {
   )
 
   return (
-    <div className="student-dashboard">
+    <>
+      <PaymentBanner />
+      <div className="student-dashboard">
       <aside className="sidebar">
         <div className="sidebar-header">
           <h2>📚 Student Panel</h2>
@@ -258,5 +261,6 @@ export default function StudentDashboard() {
         {activeSection === 'assignments' && renderAssignments()}
       </main>
     </div>
+    </>
   )
 }

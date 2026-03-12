@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import api from '../api/axios'
 import { useAuthStore } from '../store/authStore'
+import PaymentBanner from '../components/PaymentBanner'
 import './AdminDashboard.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
@@ -606,6 +607,8 @@ export default function AdminDashboard() {
   )
 
   return (
+    <>
+      <PaymentBanner />
       <div className="admin-dashboard">
         <aside className="sidebar">
           <div className="sidebar-header">
@@ -675,5 +678,6 @@ export default function AdminDashboard() {
           {activeSection === 'settings' && renderSettings()}
         </main>
       </div>
+    </>
   )
 }

@@ -17,6 +17,7 @@ import {
 import api from '../api/axios'
 import { useAuthStore } from '../store/authStore'
 import { ROLES } from '../constants/roles'
+import PaymentBanner from '../components/PaymentBanner'
 import './TeacherDashboard.css'
 
 export default function TeacherDashboard() {
@@ -425,7 +426,9 @@ export default function TeacherDashboard() {
   )
 
   return (
-    <div className="teacher-dashboard">
+    <>
+      <PaymentBanner />
+      <div className="teacher-dashboard">
       <aside className="sidebar">
         <div className="sidebar-header">
           <h2>👨‍🏫 Teacher Panel</h2>
@@ -497,6 +500,7 @@ export default function TeacherDashboard() {
         />
       )}
     </div>
+    </>
   )
 }
 

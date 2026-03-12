@@ -22,6 +22,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import uz.coder.davomatbackend.jwt.JwtAuthFilter;
 import uz.coder.davomatbackend.jwt.JwtService;
+import uz.coder.davomatbackend.jwt.PaymentCheckFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -29,10 +30,12 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
     private final UserDetailsService userService;
+    private final PaymentCheckFilter paymentCheckFilter;
 
-    public SecurityConfig(JwtService jwtService, @Lazy UserDetailsService userService) {
+    public SecurityConfig(JwtService jwtService, @Lazy UserDetailsService userService, PaymentCheckFilter paymentCheckFilter) {
         this.jwtService = jwtService;
         this.userService = userService;
+        this.paymentCheckFilter = paymentCheckFilter;
     }
 
     @Bean
@@ -118,7 +121,10 @@ public class SecurityConfig {
                 )
 
                 // JWT filter
-                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
+                
+                // Payment check filter (after JWT authentication)
+                .addFilterAfter(paymentCheckFilter, JwtAuthFilter.class);
 
         return http.build();
     }

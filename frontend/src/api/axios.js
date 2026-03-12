@@ -27,6 +27,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       useAuthStore.getState().logout()
       window.location.href = '/login'
+    } else if (error.response?.status === 402) {
+      // Payment required - show alert and logout
+      const message = error.response?.data?.message || 'To\'lov muddati tugagan. Iltimos, to\'lovni yangilang.'
+      alert(message + '\n\nTelegram Bot: @davomatAppBot')
+      useAuthStore.getState().logout()
+      window.location.href = '/login'
     }
     return Promise.reject(error)
   }

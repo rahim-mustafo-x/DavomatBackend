@@ -16,9 +16,10 @@ import uz.coder.davomatbackend.db.model.TelegramUserDbModel;
 import uz.coder.davomatbackend.db.model.UserDbModel;
 import uz.coder.davomatbackend.model.Balance;
 import uz.coder.davomatbackend.model.User;
+import static uz.coder.davomatbackend.todo.Strings.ROLE_ADMIN;
 import static uz.coder.davomatbackend.todo.Strings.ROLE_STUDENT;
+import static uz.coder.davomatbackend.todo.Strings.ROLE_TEACHER;
 import static uz.coder.davomatbackend.todo.Strings.THERE_IS_NO_SUCH_A_PERSON;
-import static uz.coder.davomatbackend.todo.Strings.YOU_ARE_NOT_A_STUDENT;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -40,9 +41,12 @@ public class UserService implements UserDetailsService {
         LocalDate now = LocalDate.now();
         LocalDate balance;
 
-        if (ROLE_STUDENT.equals(user.getRole())) {
+        // Both STUDENT and TEACHER need to pay (1 week trial)
+        // Only ADMIN doesn't need payment
+        if (ROLE_STUDENT.equals(user.getRole()) || ROLE_TEACHER.equals(user.getRole())) {
             balance = now.plusWeeks(1);
         } else {
+            // ADMIN doesn't need payment
             balance = null;
         }
 
@@ -155,8 +159,9 @@ public class UserService implements UserDetailsService {
         UserDbModel user = database.findById(telegramUserDbModel.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException(THERE_IS_NO_SUCH_A_PERSON));
 
-        if (!ROLE_STUDENT.equals(user.getRole())) {
-            throw new IllegalArgumentException(YOU_ARE_NOT_A_STUDENT);
+        // Admin doesn't need to pay, only STUDENT and TEACHER
+        if (ROLE_ADMIN.equals(user.getRole())) {
+            throw new IllegalArgumentException("Admin foydalanuvchi to'lov qilishi shart emas");
         }
 
         int updatedRows = database.updateBalanceUser(payDate, user.getId());
